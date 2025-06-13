@@ -14,6 +14,7 @@ import { OrderTracking } from "./components/OrderTracking";
 export default function App() {
   const [currentView, setCurrentView] = useState<"products" | "cart" | "orders" | "checkout" | "admin" | "tracking">("products");
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
+  const cartItemCount = useQuery(api.cart.getCartItemCount);
   
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -42,7 +43,7 @@ export default function App() {
                     currentView === "cart" ? "text-primary" : "text-gray-600 hover:text-primary"
                   }`}
                 >
-                  Cart
+                  Cart ({cartItemCount ?? 0})
                 </button>
                 <button
                   onClick={() => setCurrentView("orders")}

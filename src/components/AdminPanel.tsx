@@ -18,6 +18,17 @@ export function AdminPanel() {
   const stats = useQuery(api.admin.getOrderStats);
   const updateOrderStatus = useMutation(api.admin.updateOrderStatus);
   const addTrackingEvent = useMutation(api.tracking.addTrackingEvent);
+  const addProduct = useMutation(api.admin.addProductByAdmin);
+
+  const [newProductForm, setNewProductForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    imageUrl: "",
+    category: "",
+    stock: "",
+    featured: false,
+  });
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     try {
@@ -25,6 +36,51 @@ export function AdminPanel() {
       toast.success("Order status updated");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to update status");
+    }
+  };
+
+  const handleNewProductInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value, type } = e.target;
+    setNewProductForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+    }));
+  };
+
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (
+        !newProductForm.name ||
+        !newProductForm.description ||
+        !newProductForm.price ||
+        !newProductForm.imageUrl ||
+        !newProductForm.category ||
+        !newProductForm.stock
+      ) {
+        toast.error("Please fill in all required product fields.");
+        return;
+      }
+
+      await addProduct({
+        ...newProductForm,
+        price: parseFloat(newProductForm.price),
+        stock: parseInt(newProductForm.stock, 10),
+      });
+      toast.success("Product added successfully!");
+      setNewProductForm({
+        name: "",
+        description: "",
+        price: "",
+        imageUrl: "",
+        category: "",
+        stock: "",
+        featured: false,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to add product");
     }
   };
 
@@ -140,6 +196,92 @@ export function AdminPanel() {
             className="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition-colors"
           >
             Add Event
+          </button>
+        </form>
+      </div>
+
+      {/* Add New Product Form */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">Add New Product</h3>
+        <form onSubmit={handleAddProduct} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              type="text"
+              name="name"
+              placeholder="Product Name"
+              value={newProductForm.name}
+              onChange={handleNewProductInputChange}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              required
+            />
+            <input
+              type="text"
+              name="category"
+              placeholder="Category"
+              value={newProductForm.category}
+              onChange={handleNewProductInputChange}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              required
+            />
+          </div>
+          <textarea
+            name="description"
+            placeholder="Product Description"
+            value={newProductForm.description}
+            onChange={handleNewProductInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            rows={3}
+            required
+          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              type="number"
+              name="price"
+              placeholder="Price"
+              value={newProductForm.price}
+              onChange={handleNewProductInputChange}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              required
+              step="0.01"
+            />
+            <input
+              type="number"
+              name="stock"
+              placeholder="Stock"
+              value={newProductForm.stock}
+              onChange={handleNewProductInputChange}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              required
+              step="1"
+            />
+          </div>
+          <input
+            type="text"
+            name="imageUrl"
+            placeholder="Image URL"
+            value={newProductForm.imageUrl}
+            onChange={handleNewProductInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            required
+          />
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="featured"
+              id="featured"
+              checked={newProductForm.featured}
+              onChange={handleNewProductInputChange}
+              className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+            />
+            <label htmlFor="featured" className="text-sm text-gray-700">
+              Featured Product
+            </label>
+          </div>
+          <button
+            type="submit"
+            className="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-hover transition-colors w-full md:w-auto"
+          >
+            Add Product
           </button>
         </form>
       </div>

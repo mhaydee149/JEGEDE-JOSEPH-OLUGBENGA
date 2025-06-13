@@ -2,6 +2,7 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { api } from "./_generated/api";
+import { create as createProduct } from "../products";
 
 // Admin check function
 async function isAdmin(ctx: any) {
@@ -122,5 +123,21 @@ export const getAllUsers = query({
     await isAdmin(ctx);
     
     return await ctx.db.query("users").collect();
+  },
+});
+
+export const addProductByAdmin = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    price: v.number(),
+    imageUrl: v.string(),
+    category: v.string(),
+    stock: v.number(),
+    featured: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    await isAdmin(ctx);
+    return await createProduct(ctx, args);
   },
 });
