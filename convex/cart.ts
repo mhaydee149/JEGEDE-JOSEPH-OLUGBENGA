@@ -145,3 +145,25 @@ export const clear = mutation({
     }
   },
 });
+
+export const getCartItemCount = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return 0;
+    }
+
+    const cartItems = await ctx.db
+      .query("cartItems")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    let totalCount = 0;
+    for (const item of cartItems) {
+      totalCount += item.quantity;
+    }
+
+    return totalCount;
+  },
+});
